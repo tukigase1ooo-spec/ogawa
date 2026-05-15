@@ -36,18 +36,28 @@
   <div>PROCESSING...</div>
 </div>
 <script>
-  netlifyIdentity.on('init', function(user){
-    if(user) window.location.replace('/admin.html');
-    /* recovery_token / invite_token がある場合はウィジェットが自動でフォームを表示する
-       open() を呼ぶとログイン画面が上書きされるため何もしない */
-  });
+  (function(){
+    /* クエリパラメータでトークンが届いた場合（メールクライアントが # を削除した場合の対策）
+       ?type=recovery&token=TOKEN → #recovery_token=TOKEN に変換してリロード */
+    var p = new URLSearchParams(location.search);
+    var tok  = p.get('token');
+    var type = p.get('type');
+    if (tok && type) {
+      location.replace(location.pathname + '#' + type + '_token=' + tok);
+      return;
+    }
 
-  netlifyIdentity.on('login', function(){
-    netlifyIdentity.close();
-    window.location.replace('/admin.html');
-  });
+    netlifyIdentity.on('init', function(user){
+      if(user) window.location.replace('/admin.html');
+    });
 
-  netlifyIdentity.init();
+    netlifyIdentity.on('login', function(){
+      netlifyIdentity.close();
+      window.location.replace('/admin.html');
+    });
+
+    netlifyIdentity.init();
+  })();
 </script>
 </body>
 </html>
