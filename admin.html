@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ADMIN — OGAWA PORTFOLIO</title>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
@@ -351,21 +352,9 @@ a{color:inherit;text-decoration:none;}
   <div class="login-box">
     <div class="login-logo">OGA<span>WA</span> ADMIN</div>
     <div class="login-sub">PORTFOLIO MANAGEMENT SYSTEM</div>
-    <div class="l-fg">
-      <label>Email Address</label>
-      <input type="email" id="l-email" placeholder="admin@ogawa.art" autocomplete="email">
-    </div>
-    <div class="l-fg">
-      <label>Password</label>
-      <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
-    </div>
-    <button class="login-btn" id="login-btn">LOGIN</button>
+    <button class="login-btn" id="login-btn" onclick="netlifyIdentity.open('login')">LOGIN</button>
     <div class="login-err" id="login-err"></div>
-    <div class="login-forgot" onclick="goToReset()">パスワードを忘れた方はこちら →</div>
-    <div class="login-default">
-      初期設定: <strong>admin@ogawa.art</strong> / <strong>ogawa2026</strong><br>
-      ログイン後、設定画面でパスワードを変更してください。
-    </div>
+    <div class="login-forgot" onclick="netlifyIdentity.open('recovery')">パスワードを忘れた方はこちら →</div>
   </div>
 </div>
 
@@ -545,23 +534,11 @@ const DEF = {
   pass:'ogawa2026',
 };
 
-/* ── Auth ── */
+/* ── Auth (Netlify Identity) ── */
 const Auth = {
-  async hash(s){
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  },
-  async setup(){
-    if(!DB.get('email')) DB.set('email', DEF.email);
-    if(!DB.get('phash')) DB.set('phash', await this.hash(DEF.pass));
-  },
-  async login(email, pass){
-    const ok = email===DB.get('email') && (await this.hash(pass))===DB.get('phash');
-    if(ok) sessionStorage.setItem('og_tok','1');
-    return ok;
-  },
-  logout(){ sessionStorage.removeItem('og_tok'); },
-  ok(){ return sessionStorage.getItem('og_tok')==='1'; },
+  ok(){   return !!netlifyIdentity.currentUser(); },
+  user(){ return netlifyIdentity.currentUser(); },
+  logout(){ netlifyIdentity.logout(); },
 };
 
 /* ── Data ── */
@@ -751,21 +728,19 @@ function saveProfile(){
 
 /* ── Settings ── */
 function renderSettings(){
-  const email=DB.get('email',DEF.email);
+  const email = Auth.user()?.email || '';
   $('#set-form').innerHTML=`
     <div class="set-block">
       <h3>メールアドレスの変更</h3>
       <p class="set-note">現在のメールアドレス: <strong style="color:var(--ac)">${esc(email)}</strong><br>
-        変更すると新しいメールアドレスに確認メールが送信されます。メール内のリンクをクリックして変更を完了してください。</p>
+        変更すると新しいメールアドレスに確認メールが自動送信されます。</p>
       <div class="fg"><label>新しいメールアドレス</label><input type="email" id="new-email" placeholder="new@example.com"></div>
-      <div class="fg"><label>現在のパスワード（確認）</label><input type="password" id="email-pass-chk" placeholder="••••••••"></div>
       <button class="btn-sm btn-ac" style="margin-top:4px" onclick="changeEmail()">確認メールを送信</button>
       <div id="email-verify-area"></div>
     </div>
     <div class="set-block">
       <h3>パスワードの変更</h3>
       <p class="set-note">強力なパスワードを使用することを推奨します（8文字以上）。</p>
-      <div class="fg"><label>現在のパスワード</label><input type="password" id="cp-curr" placeholder="••••••••"></div>
       <div class="fg"><label>新しいパスワード</label><input type="password" id="cp-new" placeholder="••••••••"></div>
       <div class="fg"><label>新しいパスワード（確認）</label><input type="password" id="cp-new2" placeholder="••••••••"></div>
       <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
@@ -784,53 +759,38 @@ function renderSettings(){
 }
 
 async function changeEmail(){
-  const newEmail=$('#new-email')?.value.trim();
-  const pass    =$('#email-pass-chk')?.value;
-  const area    =$('#email-verify-area');
-  if(!newEmail||!pass){ toast('全項目を入力してください','ng'); return; }
+  const newEmail = $('#new-email')?.value.trim();
+  const area     = $('#email-verify-area');
+  if(!newEmail){ toast('メールアドレスを入力してください','ng'); return; }
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)){ toast('メールアドレスの形式が正しくありません','ng'); return; }
-  const hash=await Auth.hash(pass);
-  if(hash!==DB.get('phash')){ toast('パスワードが正しくありません','ng'); return; }
-
-  // Generate token and store pending change
-  const token=btoa(Math.random().toString(36).slice(2)+Date.now()).replace(/[=+/]/g,'').slice(0,32);
-  DB.set('pending_email', newEmail);
-  DB.set('email_token',   token);
-  DB.set('email_token_exp', Date.now()+3600000);
-
-  const verifyUrl=`${location.origin.replace(/\/[^/]*$/,'')}/reset-password.html?mode=verify&token=${token}&email=${encodeURIComponent(newEmail)}`;
-
-  // In production: call email API here (e.g. EmailJS, SendGrid, etc.)
-  // For demo: show the verification link on screen
-  area.innerHTML=`
-    <div class="verify-banner" style="margin-top:14px">
-      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-      <div>
-        <strong>${newEmail}</strong> に確認メールを送信しました。<br>
-        メール内のリンクをクリックして変更を完了してください。<br>
-        <small style="color:var(--g2);display:block;margin-top:6px">
-          ［デモ環境のため確認URL］<br>
-          <a href="${verifyUrl}" target="_blank" style="color:var(--ac);word-break:break-all">${verifyUrl}</a>
-        </small>
-      </div>
-    </div>`;
-  $('#new-email').value=''; $('#email-pass-chk').value='';
+  try {
+    await Auth.user().update({ email: newEmail });
+    area.innerHTML=`
+      <div class="verify-banner" style="margin-top:14px">
+        <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <div><strong>${esc(newEmail)}</strong> に確認メールを送信しました。<br>メール内のリンクをクリックして変更を完了してください。</div>
+      </div>`;
+    $('#new-email').value='';
+  } catch(e) {
+    toast('メールアドレスの変更に失敗しました','ng');
+  }
 }
 
 async function changePassword(){
-  const curr=$('#cp-curr')?.value;
-  const np  =$('#cp-new')?.value;
-  const np2 =$('#cp-new2')?.value;
-  const msg =$('#cp-msg');
-  if(!curr||!np||!np2){ toast('全項目を入力してください','ng'); return; }
+  const np  = $('#cp-new')?.value;
+  const np2 = $('#cp-new2')?.value;
+  const msg = $('#cp-msg');
+  if(!np||!np2){ toast('全項目を入力してください','ng'); return; }
   if(np!==np2){ msg.style.color='var(--ng)'; msg.textContent='新しいパスワードが一致しません'; return; }
   if(np.length<8){ msg.style.color='var(--ng)'; msg.textContent='8文字以上で入力してください'; return; }
-  const currHash=await Auth.hash(curr);
-  if(currHash!==DB.get('phash')){ toast('現在のパスワードが正しくありません','ng'); return; }
-  DB.set('phash', await Auth.hash(np));
-  $('#cp-curr').value=''; $('#cp-new').value=''; $('#cp-new2').value='';
-  msg.style.color='var(--ok)'; msg.textContent='パスワードを変更しました';
-  setTimeout(()=>msg.textContent='',4000);
+  try {
+    await Auth.user().update({ password: np });
+    $('#cp-new').value=''; $('#cp-new2').value='';
+    msg.style.color='var(--ok)'; msg.textContent='パスワードを変更しました';
+    setTimeout(()=>msg.textContent='',4000);
+  } catch(e) {
+    msg.style.color='var(--ng)'; msg.textContent='パスワードの変更に失敗しました';
+  }
 }
 
 function exportData(){
@@ -982,43 +942,26 @@ function closeModal(){
 
 /* ── Utils ── */
 function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function goToReset(){ location.href='reset-password.html?mode=request'; }
-
 /* ── Init ── */
-async function init(){
-  await Auth.setup();
-  if(Auth.ok()) showApp();
-
-  $('#login-btn').addEventListener('click', doLogin);
-  $('#l-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
-
-  $$('.sb-item').forEach(el=>el.addEventListener('click',()=>switchSec(el.dataset.sec)));
-
-  $('#btn-logout').addEventListener('click',()=>{
-    Auth.logout();
+function init(){
+  netlifyIdentity.on('init',  user => { if(user) showApp(); });
+  netlifyIdentity.on('login', user => { netlifyIdentity.close(); showApp(); });
+  netlifyIdentity.on('logout',()   => {
     $('#app').classList.add('hidden');
     $('#login-screen').classList.remove('hidden');
   });
+  netlifyIdentity.init();
 
+  $$('.sb-item').forEach(el=>el.addEventListener('click',()=>switchSec(el.dataset.sec)));
+  $('#btn-logout').addEventListener('click', () => Auth.logout());
   $('#modal-ov').addEventListener('click', e=>{ if(e.target===$('#modal-ov')) closeModal(); });
   document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
-}
-
-async function doLogin(){
-  const email=$('#l-email').value.trim();
-  const pass =$('#l-pass').value;
-  const err  =$('#login-err');
-  err.textContent='';
-  if(!email||!pass){ err.textContent='メールアドレスとパスワードを入力してください'; return; }
-  const ok=await Auth.login(email,pass);
-  if(!ok){ err.textContent='メールアドレスまたはパスワードが正しくありません'; return; }
-  showApp();
 }
 
 function showApp(){
   $('#login-screen').classList.add('hidden');
   $('#app').classList.remove('hidden');
-  $('#sb-email').textContent=DB.get('email',DEF.email);
+  $('#sb-email').textContent = Auth.user()?.email || '';
   updateCounts();
   switchSec('gallery');
 }
