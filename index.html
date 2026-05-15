@@ -294,13 +294,24 @@
     }
   </style>
 </head>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <script>
-/* Netlify Identity のトークンを検出したら admin.html へリダイレクト */
 (function(){
   var h = location.hash;
+  /* トークンが URL ハッシュにある場合 → identity.html へ転送 */
   if(h && (h.indexOf('recovery_token=') !== -1 || h.indexOf('invite_token=') !== -1 || h.indexOf('confirmation_token=') !== -1)){
     location.replace('/identity.html' + h);
+    return;
   }
+  /* ウィジェットが処理後にルートへ戻ってきた場合もログインを捕捉して admin へ */
+  netlifyIdentity.on('login', function(){
+    netlifyIdentity.close();
+    window.location.replace('/admin.html');
+  });
+  netlifyIdentity.on('init', function(user){
+    if(user) window.location.replace('/admin.html');
+  });
+  netlifyIdentity.init();
 })();
 </script>
 <body>
