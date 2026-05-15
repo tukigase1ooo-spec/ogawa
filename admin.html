@@ -347,7 +347,14 @@ a{color:inherit;text-decoration:none;}
 </head>
 <body>
 
-<!-- LOGIN (not shown — Netlify Identity widget opens automatically) -->
+<!-- LOADING (Netlify Identity widget opens on top of this) -->
+<div id="login-screen">
+  <div style="text-align:center">
+    <div class="login-logo">OGA<span>WA</span> ADMIN</div>
+    <div class="login-sub" style="margin-bottom:32px">PORTFOLIO MANAGEMENT SYSTEM</div>
+    <div style="font-size:.6rem;letter-spacing:.22em;color:rgba(255,255,255,.25)">LOADING...</div>
+  </div>
+</div>
 
 <!-- APP -->
 <div id="app" class="hidden">
@@ -940,7 +947,11 @@ function init(){
     else netlifyIdentity.open(); /* 未ログイン → 即ログイン画面を開く */
   });
   netlifyIdentity.on('login', user => { netlifyIdentity.close(); showApp(); });
-  netlifyIdentity.on('logout', () => { netlifyIdentity.open(); });
+  netlifyIdentity.on('logout', () => {
+    $('#app').classList.add('hidden');
+    $('#login-screen').classList.remove('hidden');
+    netlifyIdentity.open();
+  });
   netlifyIdentity.init();
 
   $$('.sb-item').forEach(el=>el.addEventListener('click',()=>switchSec(el.dataset.sec)));
@@ -950,6 +961,7 @@ function init(){
 }
 
 function showApp(){
+  $('#login-screen').classList.add('hidden');
   $('#app').classList.remove('hidden');
   $('#sb-email').textContent = Auth.user()?.email || '';
   updateCounts();
