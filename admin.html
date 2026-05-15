@@ -347,12 +347,13 @@ a{color:inherit;text-decoration:none;}
 </head>
 <body>
 
-<!-- LOADING (Netlify Identity widget opens on top of this) -->
+<!-- LOGIN -->
 <div id="login-screen">
-  <div style="text-align:center">
+  <div class="login-box">
     <div class="login-logo">OGA<span>WA</span> ADMIN</div>
-    <div class="login-sub" style="margin-bottom:32px">PORTFOLIO MANAGEMENT SYSTEM</div>
-    <div style="font-size:.6rem;letter-spacing:.22em;color:rgba(255,255,255,.25)">LOADING...</div>
+    <div class="login-sub">PORTFOLIO MANAGEMENT SYSTEM</div>
+    <button class="login-btn" onclick="netlifyIdentity.open()">LOGIN</button>
+    <div class="login-forgot" onclick="netlifyIdentity.open('recovery')">パスワードを忘れた方はこちら →</div>
   </div>
 </div>
 
@@ -942,9 +943,9 @@ function closeModal(){
 function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 /* ── Init ── */
 function init(){
-  netlifyIdentity.on('init',  user => {
+  netlifyIdentity.on('init', user => {
     if(user) showApp();
-    else netlifyIdentity.open(); /* 未ログイン → 即ログイン画面を開く */
+    /* 未ログインの場合はボタンを押してもらう（自動open不要） */
   });
   netlifyIdentity.on('login', user => { netlifyIdentity.close(); showApp(); });
   netlifyIdentity.on('logout', () => {
