@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADMIN — OGAWA PORTFOLIO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050505; --bg2:#0c0c0c; --bg3:#141414;
+  --ac:#f90091; --ac-d:rgba(249,0,145,.13); --ac-b:rgba(249,0,145,.22);
+  --fg:#f0f0f0; --g1:rgba(255,255,255,.55); --g2:rgba(255,255,255,.28); --g3:rgba(255,255,255,.09);
+  --ok:#00e87a; --ng:#ff4455;
+  --sb:224px; --fd:'Cinzel',serif; --fb:'Noto Sans JP',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:14px;}
+body{background:var(--bg);color:var(--fg);font-family:var(--fb);overflow:hidden;height:100vh;}
+button{cursor:pointer;border:none;font-family:inherit;}
+input,textarea,select{font-family:inherit;font-size:inherit;}
+input:focus,textarea:focus,select:focus{outline:none;}
+a{color:inherit;text-decoration:none;}
+.hidden{display:none!important;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--ac);}
+
+/* ── LOGIN ── */
+#login-screen{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:var(--bg);
+  background-image:
+    linear-gradient(rgba(249,0,145,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(249,0,145,.03) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+.login-box{
+  width:400px;padding:48px;background:var(--bg2);
+  border:1px solid var(--ac-b);position:relative;
+}
+.login-box::before,.login-box::after{content:'';position:absolute;width:14px;height:14px;}
+.login-box::before{top:-1px;right:-1px;border-top:2px solid var(--ac);border-right:2px solid var(--ac);}
+.login-box::after {bottom:-1px;left:-1px;border-bottom:2px solid var(--ac);border-left:2px solid var(--ac);}
+.login-logo{font-family:var(--fd);font-size:1.05rem;letter-spacing:.42em;margin-bottom:5px;}
+.login-logo span{color:var(--ac);}
+.login-sub{font-size:.62rem;color:var(--g2);letter-spacing:.18em;margin-bottom:38px;}
+.l-fg{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+.l-fg label{font-family:var(--fd);font-size:.58rem;letter-spacing:.24em;color:var(--g1);}
+.l-fg input{
+  background:var(--bg3);border:1px solid var(--g3);color:var(--fg);
+  padding:11px 14px;font-size:.87rem;transition:border-color .2s;
+}
+.l-fg input:focus{border-color:var(--ac);}
+.login-btn{
+  width:100%;padding:13px;margin-top:6px;
+  background:var(--ac);color:#fff;
+  font-family:var(--fd);font-size:.68rem;font-weight:700;letter-spacing:.28em;
+  transition:all .25s;
+}
+.login-btn:hover{background:#fff;color:var(--ac);}
+.login-err{font-size:.72rem;color:var(--ng);margin-top:11px;min-height:1.2em;letter-spacing:.05em;}
+.login-forgot{
+  font-size:.63rem;color:var(--g2);letter-spacing:.1em;
+  margin-top:16px;text-align:right;cursor:pointer;transition:color .2s;
+}
+.login-forgot:hover{color:var(--ac);}
+.login-default{
+  margin-top:24px;padding:10px 14px;
+  background:rgba(249,0,145,.06);border:1px solid var(--ac-b);
+  font-size:.62rem;color:var(--g1);line-height:1.9;letter-spacing:.04em;
+}
+.login-default strong{color:var(--ac);}
+
+/* ── APP LAYOUT ── */
+#app{display:flex;height:100vh;overflow:hidden;}
+
+/* sidebar */
+#sidebar{
+  width:var(--sb);flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--ac-b);
+  display:flex;flex-direction:column;overflow-y:auto;
+}
+.sb-logo{
+  padding:22px 20px;
+  font-family:var(--fd);font-size:.82rem;letter-spacing:.32em;
+  border-bottom:1px solid var(--g3);flex-shrink:0;
+}
+.sb-logo span{color:var(--ac);}
+.sb-label{
+  font-family:var(--fd);font-size:.52rem;letter-spacing:.28em;
+  color:var(--g2);padding:18px 20px 5px;
+}
+.sb-nav{list-style:none;}
+.sb-item{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 20px;
+  font-family:var(--fd);font-size:.65rem;letter-spacing:.16em;
+  color:var(--g1);cursor:pointer;
+  border-left:2px solid transparent;transition:all .2s;
+}
+.sb-item svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.5;flex-shrink:0;}
+.sb-item:hover{color:var(--fg);background:var(--g3);}
+.sb-item.active{color:var(--ac);border-left-color:var(--ac);background:var(--ac-d);}
+.sb-cnt{
+  margin-left:auto;padding:1px 6px;
+  font-family:var(--fd);font-size:.52rem;
+  background:var(--ac-d);color:var(--ac);border:1px solid var(--ac-b);
+}
+.sb-foot{margin-top:auto;padding:14px 18px;border-top:1px solid var(--g3);flex-shrink:0;}
+.sb-user{font-size:.68rem;color:var(--g1);margin-bottom:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sb-logout{
+  width:100%;padding:8px;
+  background:transparent;border:1px solid var(--g3);color:var(--g1);
+  font-family:var(--fd);font-size:.58rem;letter-spacing:.18em;transition:all .2s;
+}
+.sb-logout:hover{border-color:var(--ng);color:var(--ng);}
+
+/* main */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+#topbar{
+  height:54px;flex-shrink:0;
+  background:var(--bg2);border-bottom:1px solid var(--ac-b);
+  display:flex;align-items:center;justify-content:space-between;padding:0 26px;
+}
+#topbar-title{font-family:var(--fd);font-size:.85rem;letter-spacing:.25em;}
+#topbar-acts{display:flex;gap:9px;}
+.btn-sm{
+  padding:7px 17px;
+  font-family:var(--fd);font-size:.58rem;font-weight:700;letter-spacing:.2em;
+  transition:all .2s;
+}
+.btn-ac{background:var(--ac);color:#fff;border:1px solid var(--ac);}
+.btn-ac:hover{background:transparent;color:var(--ac);}
+.btn-out{background:transparent;border:1px solid var(--g3);color:var(--g1);}
+.btn-out:hover{border-color:var(--ac);color:var(--ac);}
+.btn-ng{background:transparent;border:1px solid var(--ng);color:var(--ng);}
+.btn-ng:hover{background:var(--ng);color:#fff;}
+
+#content{flex:1;overflow-y:auto;padding:26px;}
+
+/* panels */
+.panel{display:none;}
+.panel.active{display:block;}
+.p-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.p-head h2{font-family:var(--fd);font-size:.95rem;letter-spacing:.26em;}
+.p-desc{font-size:.72rem;color:var(--g1);line-height:1.8;}
+.sec-div{height:1px;background:linear-gradient(90deg,var(--ac-b),transparent);margin:18px 0;}
+
+/* gallery grid (2:3) */
+.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:6px;}
+.gc{background:var(--bg2);border:1px solid var(--g3);transition:border-color .2s;}
+.gc:hover{border-color:var(--ac-b);}
+.gc-img{
+  width:100%;aspect-ratio:2/3;
+  background:linear-gradient(135deg,#0d0d0d,#1a0012);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+.gc-img img{width:100%;height:100%;object-fit:cover;}
+.gc-ph{font-family:var(--fd);font-size:.52rem;letter-spacing:.1em;color:rgba(249,0,145,.28);}
+.gc-body{padding:8px 10px;}
+.gc-title{font-family:var(--fd);font-size:.65rem;letter-spacing:.1em;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.gc-tag{font-size:.58rem;color:var(--ac);letter-spacing:.08em;}
+.gc-acts{display:flex;gap:4px;padding:0 10px 8px;}
+.ga{flex:1;padding:5px;font-family:var(--fd);font-size:.52rem;letter-spacing:.08em;background:transparent;transition:all .2s;}
+.ga.ed{border:1px solid var(--g3);color:var(--g1);}
+.ga.ed:hover{border-color:var(--ac);color:var(--ac);}
+.ga.dl{border:1px solid var(--g3);color:var(--g1);}
+.ga.dl:hover{border-color:var(--ng);color:var(--ng);}
+
+/* add card */
+.add-card{
+  background:transparent;border:1px dashed var(--g3);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:9px;cursor:pointer;transition:all .2s;
+}
+.add-card svg{width:26px;height:26px;stroke:var(--g2);fill:none;stroke-width:1.5;}
+.add-card span{font-family:var(--fd);font-size:.58rem;letter-spacing:.14em;color:var(--g2);}
+.add-card:hover{border-color:var(--ac);}
+.add-card:hover svg,.add-card:hover span{stroke:var(--ac);color:var(--ac);}
+.add-card.ratio-g{aspect-ratio:2/3;}
+.add-card.ratio-w{aspect-ratio:4/3;}
+
+/* works grid (4:3) */
+.wk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:6px;}
+.wc{background:var(--bg2);border:1px solid var(--g3);transition:border-color .2s;}
+.wc:hover{border-color:var(--ac-b);}
+.wc-img{
+  width:100%;aspect-ratio:4/3;
+  background:linear-gradient(135deg,#0d0d0d,#0d140d);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  font-family:var(--fd);font-size:.52rem;letter-spacing:.1em;color:rgba(249,0,145,.28);
+}
+.wc-img img{width:100%;height:100%;object-fit:cover;}
+.wc-body{padding:9px 10px;}
+.wc-title{font-family:var(--fd);font-size:.68rem;letter-spacing:.1em;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.wc-cat{font-size:.6rem;color:var(--g2);}
+.wc-acts{display:flex;gap:4px;padding:0 10px 8px;}
+.wa{flex:1;padding:5px;font-family:var(--fd);font-size:.52rem;letter-spacing:.08em;background:transparent;transition:all .2s;}
+.wa.ed{border:1px solid var(--g3);color:var(--g1);}
+.wa.ed:hover{border-color:var(--ac);color:var(--ac);}
+.wa.dl{border:1px solid var(--g3);color:var(--g1);}
+.wa.dl:hover{border-color:var(--ng);color:var(--ng);}
+
+/* events list */
+.ev-list{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.ev-row{
+  background:var(--bg2);border:1px solid var(--g3);
+  display:flex;align-items:center;gap:14px;padding:14px 16px;
+  transition:border-color .2s;
+}
+.ev-row:hover{border-color:var(--ac-b);}
+.ev-date{font-family:var(--fd);font-size:.6rem;letter-spacing:.14em;color:var(--ac);width:120px;flex-shrink:0;}
+.ev-title{font-family:var(--fd);font-size:.75rem;letter-spacing:.1em;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ev-badge{
+  padding:2px 10px;font-family:var(--fd);font-size:.52rem;letter-spacing:.1em;border:1px solid;
+  flex-shrink:0;margin-left:auto;
+}
+.ev-badge.upcoming{color:var(--ac);border-color:var(--ac);}
+.ev-badge.done{color:var(--g2);border-color:var(--g3);}
+.ev-acts{display:flex;gap:5px;margin-left:10px;}
+.ea{padding:4px 11px;font-family:var(--fd);font-size:.52rem;letter-spacing:.1em;background:transparent;transition:all .2s;}
+.ea.ed{border:1px solid var(--g3);color:var(--g1);}
+.ea.ed:hover{border-color:var(--ac);color:var(--ac);}
+.ea.dl{border:1px solid var(--g3);color:var(--g1);}
+.ea.dl:hover{border-color:var(--ng);color:var(--ng);}
+
+/* forms */
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:13px;}
+.fg label{font-family:var(--fd);font-size:.57rem;letter-spacing:.22em;color:var(--g1);}
+.fg input,.fg textarea,.fg select{
+  background:var(--bg3);border:1px solid var(--g3);color:var(--fg);
+  padding:10px 13px;font-size:.84rem;transition:border-color .2s;
+}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--ac);}
+.fg textarea{height:108px;resize:vertical;}
+.fg select option{background:var(--bg3);}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.pf-sec{margin-bottom:28px;}
+.pf-sec h3{
+  font-family:var(--fd);font-size:.67rem;letter-spacing:.24em;color:var(--ac);
+  padding-bottom:7px;border-bottom:1px solid var(--g3);margin-bottom:14px;
+}
+.tags-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px;}
+.tag-chip{
+  display:flex;align-items:center;gap:4px;
+  padding:3px 10px;border:1px solid var(--ac-b);
+  font-family:var(--fd);font-size:.58rem;letter-spacing:.1em;color:var(--ac);
+}
+.tag-chip button{background:none;color:var(--g2);font-size:.9rem;line-height:1;transition:color .2s;padding:0 2px;}
+.tag-chip button:hover{color:var(--ng);}
+.tag-add-row{display:flex;gap:7px;}
+.tag-add-row input{flex:1;background:var(--bg3);border:1px solid var(--g3);color:var(--fg);padding:7px 11px;font-size:.8rem;}
+.tag-add-row input:focus{border-color:var(--ac);}
+.tag-add-row button{
+  padding:7px 14px;background:transparent;border:1px solid var(--ac-b);
+  color:var(--ac);font-family:var(--fd);font-size:.58rem;letter-spacing:.14em;transition:all .2s;
+}
+.tag-add-row button:hover{background:var(--ac);color:#fff;}
+
+/* settings */
+.set-block{
+  background:var(--bg2);border:1px solid var(--g3);
+  padding:20px 22px;margin-bottom:14px;
+}
+.set-block h3{font-family:var(--fd);font-size:.68rem;letter-spacing:.24em;color:var(--ac);margin-bottom:13px;}
+.set-note{font-size:.72rem;color:var(--g1);line-height:1.9;margin-bottom:13px;}
+.set-row{display:flex;gap:9px;margin-top:6px;}
+.verify-banner{
+  background:rgba(249,0,145,.07);border:1px solid var(--ac-b);
+  padding:13px 16px;margin-bottom:14px;
+  display:flex;align-items:flex-start;gap:11px;
+  font-size:.73rem;line-height:1.8;
+}
+.verify-banner svg{width:17px;height:17px;stroke:var(--ac);fill:none;stroke-width:1.5;flex-shrink:0;margin-top:2px;}
+
+/* modal */
+#modal-ov{
+  position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;z-index:1000;
+}
+#modal-box{
+  width:500px;max-height:90vh;overflow-y:auto;
+  background:var(--bg2);border:1px solid var(--ac-b);position:relative;
+}
+#modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--ac),transparent);}
+.modal-head{
+  padding:18px 22px;border-bottom:1px solid var(--g3);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--bg2);z-index:1;
+}
+.modal-ttl{font-family:var(--fd);font-size:.78rem;letter-spacing:.2em;}
+.modal-x{background:none;color:var(--g1);font-size:1.15rem;padding:4px 7px;transition:color .2s;}
+.modal-x:hover{color:var(--ac);}
+.modal-body{padding:22px;}
+.modal-foot{
+  padding:14px 22px;border-top:1px solid var(--g3);
+  display:flex;justify-content:flex-end;gap:9px;
+  position:sticky;bottom:0;background:var(--bg2);
+}
+
+/* image upload */
+.img-up{
+  width:100%;border:2px dashed var(--g3);background:var(--bg3);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:9px;cursor:pointer;transition:border-color .2s;position:relative;overflow:hidden;
+}
+.img-up:hover{border-color:var(--ac);}
+.img-up.ratio-g{aspect-ratio:2/3;}
+.img-up.ratio-w{aspect-ratio:4/3;}
+.img-up svg{width:30px;height:30px;stroke:var(--g2);fill:none;stroke-width:1.5;}
+.img-up span{font-size:.68rem;color:var(--g2);letter-spacing:.1em;}
+.img-up input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.img-up img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.img-chg{
+  position:absolute;inset:0;background:rgba(0,0,0,.65);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--fd);font-size:.58rem;letter-spacing:.14em;color:#fff;
+  opacity:0;transition:opacity .2s;pointer-events:none;
+}
+.img-up:hover .img-chg{opacity:1;}
+
+/* toast */
+#toast{
+  position:fixed;bottom:24px;right:24px;
+  font-family:var(--fd);font-size:.66rem;letter-spacing:.14em;
+  padding:11px 20px;border:1px solid;
+  opacity:0;transform:translateY(8px);
+  transition:all .3s;pointer-events:none;z-index:2000;
+}
+#toast.show{opacity:1;transform:translateY(0);}
+#toast.ok{background:rgba(0,232,122,.07);border-color:var(--ok);color:var(--ok);}
+#toast.ng{background:rgba(255,68,85,.07);border-color:var(--ng);color:var(--ng);}
+
+/* confirm dialog */
+#confirm-ov{
+  position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;z-index:1100;
+}
+.confirm-box{
+  width:360px;background:var(--bg2);border:1px solid var(--ac-b);padding:28px;
+}
+.confirm-msg{font-size:.82rem;line-height:1.8;margin-bottom:22px;}
+.confirm-acts{display:flex;gap:9px;justify-content:flex-end;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">OGA<span>WA</span> ADMIN</div>
+    <div class="login-sub">PORTFOLIO MANAGEMENT SYSTEM</div>
+    <div class="l-fg">
+      <label>Email Address</label>
+      <input type="email" id="l-email" placeholder="admin@ogawa.art" autocomplete="email">
+    </div>
+    <div class="l-fg">
+      <label>Password</label>
+      <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="login-btn">LOGIN</button>
+    <div class="login-err" id="login-err"></div>
+    <div class="login-forgot" onclick="goToReset()">パスワードを忘れた方はこちら →</div>
+    <div class="login-default">
+      初期設定: <strong>admin@ogawa.art</strong> / <strong>ogawa2026</strong><br>
+      ログイン後、設定画面でパスワードを変更してください。
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <aside id="sidebar">
+    <div class="sb-logo">OGA<span>WA</span> ADMIN</div>
+
+    <div class="sb-label">コンテンツ管理</div>
+    <ul class="sb-nav">
+      <li class="sb-item active" data-sec="gallery">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8.5 13.5l2.5 3 3.5-4.5 4.5 6H5z"/></svg>
+        ギャラリー <span class="sb-cnt" id="cnt-g">0</span>
+      </li>
+      <li class="sb-item" data-sec="works">
+        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 10h8M8 14h5"/></svg>
+        作品 <span class="sb-cnt" id="cnt-w">0</span>
+      </li>
+      <li class="sb-item" data-sec="events">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>
+        イベント <span class="sb-cnt" id="cnt-e">0</span>
+      </li>
+      <li class="sb-item" data-sec="profile">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        プロフィール
+      </li>
+    </ul>
+
+    <div class="sb-label">システム</div>
+    <ul class="sb-nav">
+      <li class="sb-item" data-sec="settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        設定
+      </li>
+    </ul>
+
+    <div class="sb-foot">
+      <div class="sb-user" id="sb-email"></div>
+      <button class="sb-logout" id="btn-logout">LOGOUT</button>
+    </div>
+  </aside>
+
+  <main id="main">
+    <header id="topbar">
+      <div id="topbar-ttl">ギャラリー管理</div>
+      <div id="topbar-acts">
+        <button class="btn-sm btn-out" id="btn-add" onclick="openAdd()">+ 追加</button>
+      </div>
+    </header>
+    <div id="content">
+
+      <!-- Gallery -->
+      <div class="panel active" id="panel-gallery">
+        <div class="p-head">
+          <h2>GALLERY</h2>
+        </div>
+        <p class="p-desc">イラスト作品を管理します。Original / Fan Art のカテゴリに分けて登録できます。</p>
+        <div class="sec-div"></div>
+        <div class="gal-grid" id="gal-grid"></div>
+      </div>
+
+      <!-- Works -->
+      <div class="panel" id="panel-works">
+        <div class="p-head"><h2>WORKS</h2></div>
+        <p class="p-desc">商業作品・制作実績を管理します。</p>
+        <div class="sec-div"></div>
+        <div class="wk-grid" id="wk-grid"></div>
+      </div>
+
+      <!-- Events -->
+      <div class="panel" id="panel-events">
+        <div class="p-head">
+          <h2>EVENTS</h2>
+          <button class="btn-sm btn-ac" onclick="openAdd()">+ 追加</button>
+        </div>
+        <p class="p-desc">参加イベント・展示情報を管理します。</p>
+        <div class="sec-div"></div>
+        <div class="ev-list" id="ev-list"></div>
+      </div>
+
+      <!-- Profile -->
+      <div class="panel" id="panel-profile">
+        <div class="p-head">
+          <h2>PROFILE</h2>
+          <button class="btn-sm btn-ac" onclick="saveProfile()">変更を保存</button>
+        </div>
+        <p class="p-desc">プロフィール情報を管理します。</p>
+        <div class="sec-div"></div>
+        <div id="pf-form"></div>
+      </div>
+
+      <!-- Settings -->
+      <div class="panel" id="panel-settings">
+        <div class="p-head"><h2>SETTINGS</h2></div>
+        <p class="p-desc">アカウントとシステム設定を管理します。</p>
+        <div class="sec-div"></div>
+        <div id="set-form"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div id="modal-ov" class="hidden">
+  <div id="modal-box">
+    <div class="modal-head">
+      <div class="modal-ttl" id="modal-ttl"></div>
+      <button class="modal-x" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot">
+      <button class="btn-sm btn-out" onclick="closeModal()">キャンセル</button>
+      <button class="btn-sm btn-ac" onclick="saveModal()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm -->
+<div id="confirm-ov" class="hidden">
+  <div class="confirm-box">
+    <div class="confirm-msg" id="confirm-msg"></div>
+    <div class="confirm-acts">
+      <button class="btn-sm btn-out" id="confirm-no">キャンセル</button>
+      <button class="btn-sm btn-ng" id="confirm-yes">削除する</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+/* ── DB ── */
+const DB = {
+  K: 'og_adm_',
+  get(k, def=null){ try{ const v=localStorage.getItem(this.K+k); return v!=null?JSON.parse(v):def; }catch{ return def; } },
+  set(k, v){ localStorage.setItem(this.K+k, JSON.stringify(v)); },
+  del(k){ localStorage.removeItem(this.K+k); },
+};
+
+/* ── Defaults ── */
+const DEF = {
+  gallery:[
+    {id:1,title:'ORIGINAL 01',cat:'original',src:null,desc:''},
+    {id:2,title:'ORIGINAL 02',cat:'original',src:null,desc:''},
+    {id:3,title:'ORIGINAL 03',cat:'original',src:null,desc:''},
+    {id:4,title:'ORIGINAL 04',cat:'original',src:null,desc:''},
+    {id:5,title:'ORIGINAL 05',cat:'original',src:null,desc:''},
+    {id:6,title:'ORIGINAL 06',cat:'original',src:null,desc:''},
+    {id:7,title:'FAN ART 01', cat:'fanart',  src:null,desc:''},
+    {id:8,title:'FAN ART 02', cat:'fanart',  src:null,desc:''},
+    {id:9,title:'FAN ART 03', cat:'fanart',  src:null,desc:''},
+    {id:10,title:'FAN ART 04',cat:'fanart',  src:null,desc:''},
+    {id:11,title:'FAN ART 05',cat:'fanart',  src:null,desc:''},
+  ],
+  works:[
+    {id:1,title:'TITLE 01',cat:'イラスト / デジタル',src:null,desc:''},
+    {id:2,title:'TITLE 02',cat:'キャラクターデザイン',src:null,desc:''},
+    {id:3,title:'TITLE 03',cat:'コンセプトアート',src:null,desc:''},
+    {id:4,title:'TITLE 04',cat:'コミックイラスト',src:null,desc:''},
+    {id:5,title:'TITLE 05',cat:'ブックカバーデザイン',src:null,desc:''},
+  ],
+  events:[
+    {id:1,date:'2026.06.15 Sun',title:'コミックマーケット C106',loc:'東京ビッグサイト',desc:'東京ビッグサイト 東1ホールにて参加予定です。オリジナル作品集の新刊を頒布します。',status:'upcoming'},
+    {id:2,date:'2026.08.20 Thu',title:'PIXIV MARKET Vol.9',    loc:'池袋サンシャインシティ',desc:'池袋サンシャインシティにて開催のPIXIV MARKETに出展します。',status:'upcoming'},
+    {id:3,date:'2025.12.01 Mon',title:'デジタルアート展 2025', loc:'渋谷ヒカリエ',desc:'渋谷ヒカリエにて開催のグループ展に参加しました。',status:'done'},
+  ],
+  profile:{
+    name:'OGAWA',nameJa:'小川',role:'Illustrator / Character Designer',
+    bio:'フリーランスのイラストレーター・キャラクターデザイナーとして活動しています。\n\nデジタルイラストを中心に、オリジナル作品の制作・同人活動・商業依頼など幅広く手がけています。ファンタジー・ダークテイストの作品を得意とし、細部へのこだわりと独自の色彩表現に定評があります。',
+    skills:['Digital Illustration','Character Design','Concept Art','CLIP STUDIO PAINT','Adobe Photoshop','Procreate'],
+    tools:['CLIP STUDIO PAINT','Adobe Photoshop','Procreate','Illustrator'],
+  },
+  email:'admin@ogawa.art',
+  pass:'ogawa2026',
+};
+
+/* ── Auth ── */
+const Auth = {
+  async hash(s){
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  },
+  async setup(){
+    if(!DB.get('email')) DB.set('email', DEF.email);
+    if(!DB.get('phash')) DB.set('phash', await this.hash(DEF.pass));
+  },
+  async login(email, pass){
+    const ok = email===DB.get('email') && (await this.hash(pass))===DB.get('phash');
+    if(ok) sessionStorage.setItem('og_tok','1');
+    return ok;
+  },
+  logout(){ sessionStorage.removeItem('og_tok'); },
+  ok(){ return sessionStorage.getItem('og_tok')==='1'; },
+};
+
+/* ── Data ── */
+const Data = {
+  load(k){ return DB.get(k, JSON.parse(JSON.stringify(DEF[k]||null))); },
+  save(k,v){ DB.set(k,v); },
+};
+
+/* ── Helpers ── */
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+let _toastTimer;
+function toast(msg, type='ok'){
+  const el=$('#toast'); el.textContent=msg; el.className='show '+type;
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+function confirm2(msg){
+  return new Promise(res=>{
+    const ov=$('#confirm-ov');
+    $('#confirm-msg').textContent=msg;
+    ov.classList.remove('hidden');
+    const yes=$('#confirm-yes'), no=$('#confirm-no');
+    const done=v=>(ov.classList.add('hidden'),yes.onclick=no.onclick=null,res(v));
+    yes.onclick=()=>done(true);
+    no.onclick=()=>done(false);
+  });
+}
+
+function updateCounts(){
+  $('#cnt-g').textContent = Data.load('gallery').length;
+  $('#cnt-w').textContent = Data.load('works').length;
+  $('#cnt-e').textContent = Data.load('events').length;
+}
+
+/* ── Section switching ── */
+const SEC_CFG = {
+  gallery:{ title:'ギャラリー管理', showAdd:true  },
+  works:  { title:'作品管理',       showAdd:true  },
+  events: { title:'イベント管理',   showAdd:false },
+  profile:{ title:'プロフィール',   showAdd:false },
+  settings:{ title:'設定',          showAdd:false },
+};
+let curSec = 'gallery';
+
+function switchSec(name){
+  curSec = name;
+  $$('.sb-item').forEach(el=>el.classList.toggle('active', el.dataset.sec===name));
+  $$('.panel').forEach(el=>el.classList.toggle('active', el.id==='panel-'+name));
+  const cfg = SEC_CFG[name];
+  $('#topbar-ttl').textContent = cfg.title;
+  $('#btn-add').style.display = (cfg.showAdd&&name!=='events') ? '' : 'none';
+  const r = { gallery:renderGallery, works:renderWorks, events:renderEvents, profile:renderProfile, settings:renderSettings };
+  if(r[name]) r[name]();
+}
+
+/* ── Gallery ── */
+function renderGallery(){
+  const data = Data.load('gallery');
+  const grid = $('#gal-grid');
+  grid.innerHTML = '';
+  data.forEach(item=>{
+    const d=document.createElement('div'); d.className='gc';
+    d.innerHTML=`
+      <div class="gc-img">${item.src?`<img src="${item.src}" alt="">`:`<span class="gc-ph">NO IMAGE</span>`}</div>
+      <div class="gc-body">
+        <div class="gc-title">${esc(item.title)}</div>
+        <div class="gc-tag">${item.cat==='original'?'ORIGINAL':'FAN ART'}</div>
+      </div>
+      <div class="gc-acts">
+        <button class="ga ed" onclick="editItem('gallery',${item.id})">編集</button>
+        <button class="ga dl" onclick="delItem('gallery',${item.id})">削除</button>
+      </div>`;
+    grid.appendChild(d);
+  });
+  const add=document.createElement('div');
+  add.className='add-card ratio-g'; add.onclick=openAdd;
+  add.innerHTML=`<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>追加</span>`;
+  grid.appendChild(add);
+}
+
+/* ── Works ── */
+function renderWorks(){
+  const data=Data.load('works');
+  const grid=$('#wk-grid');
+  grid.innerHTML='';
+  data.forEach(item=>{
+    const d=document.createElement('div'); d.className='wc';
+    d.innerHTML=`
+      <div class="wc-img">${item.src?`<img src="${item.src}" alt="">`:''}</div>
+      <div class="wc-body">
+        <div class="wc-title">${esc(item.title)}</div>
+        <div class="wc-cat">${esc(item.cat)}</div>
+      </div>
+      <div class="wc-acts">
+        <button class="wa ed" onclick="editItem('works',${item.id})">編集</button>
+        <button class="wa dl" onclick="delItem('works',${item.id})">削除</button>
+      </div>`;
+    grid.appendChild(d);
+  });
+  const add=document.createElement('div');
+  add.className='add-card ratio-w'; add.onclick=openAdd;
+  add.innerHTML=`<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>追加</span>`;
+  grid.appendChild(add);
+}
+
+/* ── Events ── */
+function renderEvents(){
+  const data=Data.load('events');
+  const list=$('#ev-list');
+  list.innerHTML='';
+  data.forEach(ev=>{
+    const d=document.createElement('div'); d.className='ev-row';
+    d.innerHTML=`
+      <div class="ev-date">${esc(ev.date)}</div>
+      <div class="ev-title">${esc(ev.title)}</div>
+      <span class="ev-badge ${ev.status}">${ev.status==='upcoming'?'参加予定':'終了'}</span>
+      <div class="ev-acts">
+        <button class="ea ed" onclick="editItem('events',${ev.id})">編集</button>
+        <button class="ea dl" onclick="delItem('events',${ev.id})">削除</button>
+      </div>`;
+    list.appendChild(d);
+  });
+}
+
+/* ── Profile ── */
+function renderProfile(){
+  const p=Data.load('profile');
+  $('#pf-form').innerHTML=`
+    <div class="pf-sec">
+      <h3>基本情報</h3>
+      <div class="fg-row">
+        <div class="fg"><label>名前（英語）</label><input id="pf-name" value="${esc(p.name)}"></div>
+        <div class="fg"><label>名前（日本語）</label><input id="pf-nameja" value="${esc(p.nameJa)}"></div>
+      </div>
+      <div class="fg"><label>肩書き</label><input id="pf-role" value="${esc(p.role)}"></div>
+      <div class="fg"><label>プロフィール文</label><textarea id="pf-bio">${esc(p.bio)}</textarea></div>
+    </div>
+    <div class="pf-sec">
+      <h3>スキル</h3>
+      <div class="tags-wrap" id="skills-wrap"></div>
+      <div class="tag-add-row">
+        <input id="skill-in" placeholder="例: Watercolor" onkeydown="if(event.key==='Enter'){addTag('skills','skill-in');event.preventDefault();}">
+        <button onclick="addTag('skills','skill-in')">追加</button>
+      </div>
+    </div>
+    <div class="pf-sec" style="margin-top:18px">
+      <h3>使用ツール</h3>
+      <div class="tags-wrap" id="tools-wrap"></div>
+      <div class="tag-add-row">
+        <input id="tool-in" placeholder="例: Krita" onkeydown="if(event.key==='Enter'){addTag('tools','tool-in');event.preventDefault();}">
+        <button onclick="addTag('tools','tool-in')">追加</button>
+      </div>
+    </div>`;
+  renderTags('skills', p.skills);
+  renderTags('tools',  p.tools);
+}
+
+function renderTags(type, tags){
+  const wrap=$(`#${type}-wrap`);
+  if(!wrap) return;
+  wrap.innerHTML = tags.map((t,i)=>
+    `<div class="tag-chip">${esc(t)}<button onclick="removeTag('${type}',${i})">×</button></div>`
+  ).join('');
+}
+
+function addTag(type, inId){
+  const input=$(`#${inId}`); const val=input.value.trim(); if(!val) return;
+  const p=Data.load('profile');
+  if(!p[type].includes(val)){ p[type].push(val); Data.save('profile',p); renderTags(type,p[type]); }
+  input.value='';
+}
+
+function removeTag(type, idx){
+  const p=Data.load('profile'); p[type].splice(idx,1); Data.save('profile',p); renderTags(type,p[type]);
+}
+
+function saveProfile(){
+  const p=Data.load('profile');
+  p.name   = $('#pf-name')?.value.trim()   || p.name;
+  p.nameJa = $('#pf-nameja')?.value.trim() || p.nameJa;
+  p.role   = $('#pf-role')?.value.trim()   || p.role;
+  p.bio    = $('#pf-bio')?.value.trim()    || p.bio;
+  Data.save('profile',p); toast('プロフィールを保存しました');
+}
+
+/* ── Settings ── */
+function renderSettings(){
+  const email=DB.get('email',DEF.email);
+  $('#set-form').innerHTML=`
+    <div class="set-block">
+      <h3>メールアドレスの変更</h3>
+      <p class="set-note">現在のメールアドレス: <strong style="color:var(--ac)">${esc(email)}</strong><br>
+        変更すると新しいメールアドレスに確認メールが送信されます。メール内のリンクをクリックして変更を完了してください。</p>
+      <div class="fg"><label>新しいメールアドレス</label><input type="email" id="new-email" placeholder="new@example.com"></div>
+      <div class="fg"><label>現在のパスワード（確認）</label><input type="password" id="email-pass-chk" placeholder="••••••••"></div>
+      <button class="btn-sm btn-ac" style="margin-top:4px" onclick="changeEmail()">確認メールを送信</button>
+      <div id="email-verify-area"></div>
+    </div>
+    <div class="set-block">
+      <h3>パスワードの変更</h3>
+      <p class="set-note">強力なパスワードを使用することを推奨します（8文字以上）。</p>
+      <div class="fg"><label>現在のパスワード</label><input type="password" id="cp-curr" placeholder="••••••••"></div>
+      <div class="fg"><label>新しいパスワード</label><input type="password" id="cp-new" placeholder="••••••••"></div>
+      <div class="fg"><label>新しいパスワード（確認）</label><input type="password" id="cp-new2" placeholder="••••••••"></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+        <button class="btn-sm btn-ac" onclick="changePassword()">パスワードを変更</button>
+        <span id="cp-msg" style="font-size:.7rem;"></span>
+      </div>
+    </div>
+    <div class="set-block">
+      <h3>データ管理</h3>
+      <p class="set-note">サイトデータをJSON形式でエクスポートできます。<br>リセットすると全データが初期値に戻ります（取り消し不可）。</p>
+      <div class="set-row">
+        <button class="btn-sm btn-out" onclick="exportData()">データをエクスポート</button>
+        <button class="btn-sm btn-ng"  onclick="resetData()">データをリセット</button>
+      </div>
+    </div>`;
+}
+
+async function changeEmail(){
+  const newEmail=$('#new-email')?.value.trim();
+  const pass    =$('#email-pass-chk')?.value;
+  const area    =$('#email-verify-area');
+  if(!newEmail||!pass){ toast('全項目を入力してください','ng'); return; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)){ toast('メールアドレスの形式が正しくありません','ng'); return; }
+  const hash=await Auth.hash(pass);
+  if(hash!==DB.get('phash')){ toast('パスワードが正しくありません','ng'); return; }
+
+  // Generate token and store pending change
+  const token=btoa(Math.random().toString(36).slice(2)+Date.now()).replace(/[=+/]/g,'').slice(0,32);
+  DB.set('pending_email', newEmail);
+  DB.set('email_token',   token);
+  DB.set('email_token_exp', Date.now()+3600000);
+
+  const verifyUrl=`${location.origin.replace(/\/[^/]*$/,'')}/reset-password.html?mode=verify&token=${token}&email=${encodeURIComponent(newEmail)}`;
+
+  // In production: call email API here (e.g. EmailJS, SendGrid, etc.)
+  // For demo: show the verification link on screen
+  area.innerHTML=`
+    <div class="verify-banner" style="margin-top:14px">
+      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      <div>
+        <strong>${newEmail}</strong> に確認メールを送信しました。<br>
+        メール内のリンクをクリックして変更を完了してください。<br>
+        <small style="color:var(--g2);display:block;margin-top:6px">
+          ［デモ環境のため確認URL］<br>
+          <a href="${verifyUrl}" target="_blank" style="color:var(--ac);word-break:break-all">${verifyUrl}</a>
+        </small>
+      </div>
+    </div>`;
+  $('#new-email').value=''; $('#email-pass-chk').value='';
+}
+
+async function changePassword(){
+  const curr=$('#cp-curr')?.value;
+  const np  =$('#cp-new')?.value;
+  const np2 =$('#cp-new2')?.value;
+  const msg =$('#cp-msg');
+  if(!curr||!np||!np2){ toast('全項目を入力してください','ng'); return; }
+  if(np!==np2){ msg.style.color='var(--ng)'; msg.textContent='新しいパスワードが一致しません'; return; }
+  if(np.length<8){ msg.style.color='var(--ng)'; msg.textContent='8文字以上で入力してください'; return; }
+  const currHash=await Auth.hash(curr);
+  if(currHash!==DB.get('phash')){ toast('現在のパスワードが正しくありません','ng'); return; }
+  DB.set('phash', await Auth.hash(np));
+  $('#cp-curr').value=''; $('#cp-new').value=''; $('#cp-new2').value='';
+  msg.style.color='var(--ok)'; msg.textContent='パスワードを変更しました';
+  setTimeout(()=>msg.textContent='',4000);
+}
+
+function exportData(){
+  const d={gallery:Data.load('gallery'),works:Data.load('works'),events:Data.load('events'),profile:Data.load('profile')};
+  const blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='ogawa-portfolio-data.json'; a.click();
+  URL.revokeObjectURL(url); toast('エクスポートしました');
+}
+
+async function resetData(){
+  const ok=await confirm2('データを初期値にリセットしますか？\nこの操作は取り消せません。');
+  if(!ok) return;
+  ['gallery','works','events','profile'].forEach(k=>Data.save(k,JSON.parse(JSON.stringify(DEF[k]))));
+  updateCounts(); switchSec(curSec); toast('リセットしました');
+}
+
+/* ── CRUD helpers ── */
+async function delItem(type, id){
+  const ok=await confirm2('このアイテムを削除しますか？');
+  if(!ok) return;
+  const data=Data.load(type).filter(i=>i.id!==id);
+  Data.save(type,data); updateCounts();
+  const r={gallery:renderGallery,works:renderWorks,events:renderEvents};
+  if(r[type]) r[type]();
+  toast('削除しました');
+}
+
+function editItem(type, id){
+  const item=Data.load(type).find(i=>i.id===id);
+  if(item) openModal(type,item);
+}
+
+/* ── Modal ── */
+let _md=null;
+
+function openAdd(){
+  const map={gallery:'gallery',works:'works',events:'events'};
+  const t=map[curSec]; if(t) openModal(t,null);
+}
+
+function openModal(type, item){
+  _md={type,item};
+  const labels={gallery:'ギャラリー',works:'作品',events:'イベント'};
+  $('#modal-ttl').textContent=(item?'編集: ':'追加: ')+labels[type];
+  $('#modal-body').innerHTML=buildForm(type,item);
+  const fi=$('#modal-img-in');
+  if(fi) fi.addEventListener('change',onImgChange);
+  $('#modal-ov').classList.remove('hidden');
+}
+
+function buildForm(type, item){
+  const v=(x,fb='')=>esc(item?.[x]??fb);
+  if(type==='gallery') return `
+    <div class="img-up ratio-g" id="img-up">
+      ${item?.src?`<img src="${item.src}" id="img-prev">`:''}
+      <svg viewBox="0 0 24 24"${item?.src?' style="display:none"':''}><path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5z"/></svg>
+      <span${item?.src?' style="display:none"':''}>クリックして画像を選択</span>
+      <div class="img-chg">画像を変更</div>
+      <input type="file" id="modal-img-in" accept="image/*">
+    </div>
+    <div class="fg" style="margin-top:13px"><label>タイトル</label><input id="m-title" value="${v('title')}"></div>
+    <div class="fg"><label>カテゴリ</label>
+      <select id="m-cat">
+        <option value="original"${item?.cat==='original'?' selected':''}>Original</option>
+        <option value="fanart"${item?.cat==='fanart'?' selected':''}>Fan Art</option>
+      </select></div>
+    <div class="fg"><label>説明文（任意）</label><textarea id="m-desc">${v('desc')}</textarea></div>`;
+
+  if(type==='works') return `
+    <div class="img-up ratio-w" id="img-up">
+      ${item?.src?`<img src="${item.src}" id="img-prev">`:''}
+      <svg viewBox="0 0 24 24"${item?.src?' style="display:none"':''}><path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5z"/></svg>
+      <span${item?.src?' style="display:none"':''}>クリックして画像を選択</span>
+      <div class="img-chg">画像を変更</div>
+      <input type="file" id="modal-img-in" accept="image/*">
+    </div>
+    <div class="fg" style="margin-top:13px"><label>タイトル</label><input id="m-title" value="${v('title')}"></div>
+    <div class="fg"><label>ジャンル / カテゴリ</label><input id="m-cat" value="${v('cat')}"></div>
+    <div class="fg"><label>説明文（任意）</label><textarea id="m-desc">${v('desc')}</textarea></div>`;
+
+  if(type==='events') return `
+    <div class="fg"><label>日付表示</label><input id="m-date" value="${v('date')}" placeholder="2026.06.15 Sun"></div>
+    <div class="fg"><label>イベント名</label><input id="m-title" value="${v('title')}"></div>
+    <div class="fg"><label>会場</label><input id="m-loc" value="${v('loc')}"></div>
+    <div class="fg"><label>説明文</label><textarea id="m-desc">${v('desc')}</textarea></div>
+    <div class="fg"><label>ステータス</label>
+      <select id="m-status">
+        <option value="upcoming"${item?.status==='upcoming'?' selected':''}>参加予定</option>
+        <option value="done"${item?.status==='done'?' selected':''}>終了</option>
+      </select></div>`;
+  return '';
+}
+
+function onImgChange(e){
+  const file=e.target.files[0]; if(!file) return;
+  if(file.size>5*1024*1024){ toast('5MB以下の画像を選択してください','ng'); return; }
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    let prev=$('#img-prev');
+    if(!prev){ prev=document.createElement('img'); prev.id='img-prev'; $('#img-up').prepend(prev); }
+    prev.src=ev.target.result;
+    $('#img-up').querySelectorAll('svg,span').forEach(el=>el.style.display='none');
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveModal(){
+  if(!_md) return;
+  const {type,item}=_md; const isEdit=!!item;
+  const newSrc=$('#img-prev')?.src||item?.src||null;
+
+  if(type==='gallery'||type==='works'){
+    const data=Data.load(type);
+    const newItem={
+      id:    isEdit?item.id:(data.reduce((m,i)=>Math.max(m,i.id),0)+1),
+      title: ($('#m-title')?.value.trim()||'UNTITLED'),
+      cat:   ($('#m-cat')?.value||''),
+      src:   newSrc,
+      desc:  ($('#m-desc')?.value.trim()||''),
+    };
+    if(isEdit){ const idx=data.findIndex(i=>i.id===item.id); data[idx]=newItem; }
+    else data.push(newItem);
+    Data.save(type,data);
+    type==='gallery'?renderGallery():renderWorks();
+  }
+
+  if(type==='events'){
+    const data=Data.load('events');
+    const newItem={
+      id:     isEdit?item.id:(data.reduce((m,i)=>Math.max(m,i.id),0)+1),
+      date:   ($('#m-date')?.value.trim()||''),
+      title:  ($('#m-title')?.value.trim()||''),
+      loc:    ($('#m-loc')?.value.trim()||''),
+      desc:   ($('#m-desc')?.value.trim()||''),
+      status: ($('#m-status')?.value||'upcoming'),
+    };
+    if(isEdit){ const idx=data.findIndex(i=>i.id===item.id); data[idx]=newItem; }
+    else data.push(newItem);
+    Data.save('events',data); renderEvents();
+  }
+
+  updateCounts(); closeModal(); toast('保存しました');
+}
+
+function closeModal(){
+  $('#modal-ov').classList.add('hidden'); _md=null;
+}
+
+/* ── Utils ── */
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function goToReset(){ location.href='reset-password.html?mode=request'; }
+
+/* ── Init ── */
+async function init(){
+  await Auth.setup();
+  if(Auth.ok()) showApp();
+
+  $('#login-btn').addEventListener('click', doLogin);
+  $('#l-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
+  $$('.sb-item').forEach(el=>el.addEventListener('click',()=>switchSec(el.dataset.sec)));
+
+  $('#btn-logout').addEventListener('click',()=>{
+    Auth.logout();
+    $('#app').classList.add('hidden');
+    $('#login-screen').classList.remove('hidden');
+  });
+
+  $('#modal-ov').addEventListener('click', e=>{ if(e.target===$('#modal-ov')) closeModal(); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+}
+
+async function doLogin(){
+  const email=$('#l-email').value.trim();
+  const pass =$('#l-pass').value;
+  const err  =$('#login-err');
+  err.textContent='';
+  if(!email||!pass){ err.textContent='メールアドレスとパスワードを入力してください'; return; }
+  const ok=await Auth.login(email,pass);
+  if(!ok){ err.textContent='メールアドレスまたはパスワードが正しくありません'; return; }
+  showApp();
+}
+
+function showApp(){
+  $('#login-screen').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  $('#sb-email').textContent=DB.get('email',DEF.email);
+  updateCounts();
+  switchSec('gallery');
+}
+
+init();
+</script>
+</body>
+</html>
