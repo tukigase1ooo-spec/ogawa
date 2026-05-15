@@ -37,13 +37,9 @@
 </div>
 <script>
   netlifyIdentity.on('init', function(user){
-    if(user){
-      // ログイン済み（招待・パスワード変更完了後）→ 管理画面へ
-      window.location.replace('/admin.html');
-    } else {
-      // 未ログイン → ウィジェットにトークンを処理させる
-      netlifyIdentity.open();
-    }
+    if(user) window.location.replace('/admin.html');
+    /* recovery_token / invite_token がある場合はウィジェットが自動でフォームを表示する
+       open() を呼ぶとログイン画面が上書きされるため何もしない */
   });
 
   netlifyIdentity.on('login', function(){

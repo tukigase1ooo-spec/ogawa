@@ -347,15 +347,6 @@ a{color:inherit;text-decoration:none;}
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">OGA<span>WA</span> ADMIN</div>
-    <div class="login-sub">PORTFOLIO MANAGEMENT SYSTEM</div>
-    <button class="login-btn" onclick="netlifyIdentity.open()">LOGIN</button>
-    <div class="login-forgot" onclick="netlifyIdentity.open('recovery')">パスワードを忘れた方はこちら →</div>
-  </div>
-</div>
 
 <!-- APP -->
 <div id="app" class="hidden">
@@ -943,17 +934,15 @@ function closeModal(){
 function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 /* ── Init ── */
 function init(){
-  netlifyIdentity.on('init', user => {
-    if(user) showApp();
-    /* 未ログインの場合はボタンを押してもらう（自動open不要） */
-  });
+  netlifyIdentity.on('init',  user => { if(user) showApp(); });
   netlifyIdentity.on('login', user => { netlifyIdentity.close(); showApp(); });
   netlifyIdentity.on('logout', () => {
     $('#app').classList.add('hidden');
-    $('#login-screen').classList.remove('hidden');
-    netlifyIdentity.open();
+    setTimeout(() => netlifyIdentity.open(), 200);
   });
   netlifyIdentity.init();
+  /* 未ログイン時：ウィジェットが読み込まれてからログイン画面を開く */
+  setTimeout(() => { if(!netlifyIdentity.currentUser()) netlifyIdentity.open(); }, 800);
 
   $$('.sb-item').forEach(el=>el.addEventListener('click',()=>switchSec(el.dataset.sec)));
   $('#btn-logout').addEventListener('click', () => Auth.logout());
@@ -962,7 +951,6 @@ function init(){
 }
 
 function showApp(){
-  $('#login-screen').classList.add('hidden');
   $('#app').classList.remove('hidden');
   $('#sb-email').textContent = Auth.user()?.email || '';
   updateCounts();
