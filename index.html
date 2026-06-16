@@ -584,7 +584,7 @@
   </div>
   <footer>
     <div class="ft-logo"><img src="assets/logo-v.png" alt="OGAWA" style="height:48px;filter:invert(1);opacity:.4;"></div>
-    <a href="/admin" class="ft-copy" style="text-decoration:none;color:inherit;">© 2026 Ogawa. All Rights Reserved.</a>
+    <div class="ft-copy">© 2026 Ogawa. All Rights Reserved.</div>
   </footer>
 </section>
 
@@ -919,7 +919,6 @@ function submitForm(e) {
 
     wrap.style.transform = `translateY(-${idx * 100}vh)`;
     updateDots();
-    history.replaceState(null, '', '#' + SECTIONS[idx]);
     wrap.getBoundingClientRect(); /* force reflow before reveal */
 
     await curtainOut();
