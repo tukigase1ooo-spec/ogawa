@@ -175,7 +175,7 @@
 <div id="gate">
   <div class="logo">OGA<span>WA</span> ADMIN</div>
   <div class="msg">CHECKING AUTHENTICATION...</div>
-  <button id="login-btn" style="display:none" onclick="netlifyIdentity.open()">LOGIN</button>
+  <button id="login-btn" style="display:none">LOGIN</button>
 </div>
 
 <!-- ADMIN SHELL -->
@@ -350,6 +350,17 @@
     msgEl.textContent    = 'ログインが必要です';
     btnEl.style.display  = 'inline-block';
   }
+
+  btnEl.addEventListener('click', function () {
+    gate.style.display = 'none';
+    netlifyIdentity.open('login');
+  });
+
+  netlifyIdentity.on('close', function () {
+    if (!netlifyIdentity.currentUser()) {
+      gate.style.display = 'flex';
+    }
+  });
 
   netlifyIdentity.on('init', function (user) {
     if (user) {
