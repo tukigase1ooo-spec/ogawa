@@ -82,8 +82,8 @@
     .hero-cap h1 { animation:holo-pulse 3.8s ease-in-out infinite; }
 
     /* ── HERO ── */
-    #hero-three { position:absolute; inset:0; z-index:2; pointer-events:none; mix-blend-mode:screen; }
     #hero { padding:0; height:100vh; overflow:hidden; position:relative; }
+    #hero-three { position:absolute; inset:0; z-index:2; pointer-events:none; mix-blend-mode:screen; }
     .hero-track { display:flex; height:100%; transition:transform .85s cubic-bezier(.77,0,.175,1); }
     .hero-slide { min-width:100%; height:100%; position:relative; overflow:hidden; }
     .slide-bg { width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
@@ -325,56 +325,33 @@
       position:absolute; inset:0; width:100%; height:100%; z-index:0;
       display:block;
     }
-    #intro-html {
-      position:absolute; inset:0; z-index:1;
-      display:flex; align-items:center; justify-content:center;
-      pointer-events:none;
+    #intro-loading-text {
+      position:absolute; left:0; right:0; top:38%; transform:translateY(-50%);
+      text-align:center; padding-left:.06em;
+      font-family:var(--fd); font-size:clamp(2.8rem,6vw,5rem); font-weight:900;
+      color:#f90091; letter-spacing:.06em; white-space:nowrap;
+      z-index:2; pointer-events:none;
     }
-    #intro-char {
-      position:absolute;
-      bottom:0; left:50%;
-      transform:translateX(-50%) translateY(50px);
-      height:90vh; max-width:75vw;
-      object-fit:contain; object-position:bottom;
-      opacity:0;
-      filter:brightness(.65) contrast(1.1) saturate(1.2);
-    }
-    #intro-logo {
-      position:relative; z-index:2;
-      width:min(400px,58vw);
-      filter:invert(1);
-      opacity:0; transform-origin:center center;
-    }
-    #intro-vignette {
-      position:absolute; inset:0; z-index:2;
-      background:radial-gradient(ellipse at center, transparent 22%, rgba(0,0,0,.72) 100%);
-      pointer-events:none;
-    }
-    #intro-ui {
-      position:absolute; bottom:38px; left:50px; right:50px;
-      z-index:5; pointer-events:none;
-      display:flex; align-items:center; gap:20px;
-    }
-    #intro-hint {
-      font-family:var(--fd); font-size:.56rem; letter-spacing:.42em;
-      color:rgba(255,255,255,.32); text-transform:uppercase; white-space:nowrap;
-      animation:hint-bob 2.2s ease-in-out infinite;
-      transition:opacity .5s ease;
-    }
-    @keyframes hint-bob {
-      0%,100%{ transform:translateY(0); }
-      50%    { transform:translateY(-5px); }
-    }
-    #intro-bar-wrap {
-      flex:1; height:1px; background:rgba(255,255,255,.1); position:relative; overflow:hidden;
-    }
-    #intro-progress {
-      position:absolute; left:0; top:0; height:100%;
-      background:var(--ac); width:0%; box-shadow:0 0 8px var(--ac);
+    #intro-welcome-text {
+      position:absolute; left:0; right:0; top:38%; transform:translateY(-50%);
+      text-align:center; padding-left:.06em; display:none;
+      font-family:var(--fd); font-size:clamp(2.8rem,6vw,5rem); font-weight:900;
+      color:#000; letter-spacing:.06em; white-space:nowrap;
+      z-index:2; pointer-events:none;
     }
     #intro-counter {
-      font-family:var(--fd); font-size:.68rem; letter-spacing:.22em;
-      color:rgba(255,255,255,.38); white-space:nowrap;
+      position:absolute; left:50%; top:62%; transform:translate(-50%,-50%);
+      font-family:var(--fd); font-size:clamp(1.2rem,2.8vw,2rem); font-weight:700;
+      color:#f90091; letter-spacing:.14em;
+      z-index:2; pointer-events:none;
+    }
+    #intro-bar-left {
+      position:absolute; left:0; top:50%; transform:translateY(-50%);
+      height:5px; width:0%; background:#f90091; z-index:3; pointer-events:none;
+    }
+    #intro-bar-right {
+      position:absolute; right:0; top:50%; transform:translateY(-50%);
+      height:5px; width:0%; background:#f90091; z-index:3; pointer-events:none;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
@@ -392,14 +369,11 @@
 <!-- ── INTRO ── -->
 <div id="intro">
   <canvas id="intro-canvas"></canvas>
-  <div id="intro-html">
-    <img id="intro-logo" src="assets/logo-h.png" alt="OGAWA">
-    <div id="intro-vignette"></div>
-  </div>
-  <div id="intro-ui">
-    <div id="intro-bar-wrap"><div id="intro-progress"></div></div>
-    <span id="intro-counter">00%</span>
-  </div>
+  <div id="intro-loading-text">Loading...</div>
+  <div id="intro-welcome-text">Welcome!!</div>
+  <div id="intro-counter">0%</div>
+  <div id="intro-bar-left"></div>
+  <div id="intro-bar-right"></div>
 </div>
 
 <!-- Cursor -->
@@ -733,7 +707,7 @@ document.addEventListener('mouseup',   () => { curEl.style.width='10px'; curEl.s
   const COLS = ['#f90091','#ff2fa8','#ff55c1','#ff007a','#e8007e'];
 
   function spawn(cx, cy) {
-    const R   = 30 + Math.random() * 18;
+    const R   = 20 + Math.random() * 12;
     const col = COLS[Math.floor(Math.random() * COLS.length)];
 
     /*
@@ -974,107 +948,119 @@ function submitForm(e) {
 })();
 
 /* ═══════════════════════════
-   INTRO — LOGO→ILLUST ZOOM
+   INTRO — ORB + BARS
 ═══════════════════════════ */
 (function(){
   const overlay = document.getElementById('intro');
   if (!overlay) { window.introActive = false; return; }
+  if (typeof THREE === 'undefined') { overlay.remove(); window.introActive = false; return; }
   window.introActive = true;
   let introComplete = false;
 
-  const cv  = document.getElementById('intro-canvas');
-  const ctx = cv.getContext('2d');
-  let W = cv.width  = window.innerWidth;
-  let H = cv.height = window.innerHeight;
+  const cv = document.getElementById('intro-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setClearColor(0x000000, 1);
 
-  const logoImg = new Image(); logoImg.src = 'assets/logo-h.png';
+  const scene  = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 100);
+  camera.position.z = 3.8;
 
-  /* パーティクル */
-  const PTS = 700;
-  const particles = [];
-  for (let i = 0; i < PTS; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const r = 50 + Math.random() * 400;
-    particles.push({
-      x: Math.cos(angle) * r,
-      y: Math.sin(angle) * r * 0.55,
-      z: 0.06 + Math.random() * 0.94,
-      sz: 0.5 + Math.random() * 1.8,
-      pink: Math.random() > 0.80,
-      alpha: 0.25 + Math.random() * 0.65,
-    });
+  const PINK = 0xf90091;
+  const allMats = [];
+  const NRM = { depthWrite: false, depthTest: false };
+
+  function mkLine(op) {
+    const m = new THREE.LineBasicMaterial({ color: PINK, transparent: true, opacity: op, ...NRM });
+    allMats.push(m); return m;
   }
 
-  let progress = 0, targetProgress = 0;
-  const AUTO_FRAMES = 100; /* 約1.7秒で完了 (60fps想定) */
-  let rot = 0, frame = 0;
+  const orb = new THREE.Group();
 
-  const counterEl  = document.getElementById('intro-counter');
-  const progressEl = document.getElementById('intro-progress');
-  const logoEl     = document.getElementById('intro-logo');
-  if (logoEl) { logoEl.style.opacity = '0'; logoEl.style.display = 'none'; }
+  /* 軌道環 3本（1本線） */
+  const ringPts = Array.from({ length: 128 }, (_, i) => {
+    const a = (i / 128) * Math.PI * 2;
+    return new THREE.Vector3(Math.cos(a) * 1.65, Math.sin(a) * 1.65, 0);
+  });
+  const ringGeo = new THREE.BufferGeometry().setFromPoints(ringPts);
 
-  function ss(t) { return t * t * (3 - 2 * t); } /* smoothstep */
+  const rings = [
+    { tiltX: 0,               op: 0.60, speed:  0.0022 },
+    { tiltX: Math.PI / 3,     op: 0.50, speed: -0.0032 },
+    { tiltX: 2*Math.PI / 3,   op: 0.42, speed:  0.0017 },
+  ].map(({ tiltX, op, speed }) => {
+    const m = new THREE.LineLoop(ringGeo, mkLine(op));
+    m.rotation.x = tiltX; m.userData.speed = speed;
+    orb.add(m); return m;
+  });
+
+  /* 正十二面体 */
+  const hex = new THREE.Group();
+  hex.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.DodecahedronGeometry(1.05)), mkLine(0.9)));
+  orb.add(hex);
+
+  /* ノード球 6軸 */
+  const nodeMat = new THREE.MeshBasicMaterial({ color: PINK, transparent: true, opacity: 0.18, ...NRM });
+  allMats.push(nodeMat);
+  const nodeGeo = new THREE.SphereGeometry(0.048, 8, 8);
+  [[0,1.65,0],[0,-1.65,0],[1.65,0,0],[-1.65,0,0],[0,0,1.65],[0,0,-1.65]]
+    .forEach(([x,y,z]) => { const n = new THREE.Mesh(nodeGeo, nodeMat); n.position.set(x,y,z); orb.add(n); });
+
+  /* 中心コア */
+  const coreMat = new THREE.MeshBasicMaterial({ color: PINK, transparent: true, opacity: 0.18, ...NRM });
+  allMats.push(coreMat);
+  orb.add(new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 12), coreMat));
+
+  scene.add(orb);
+
+  const loadingEl = document.getElementById('intro-loading-text');
+  const welcomeEl = document.getElementById('intro-welcome-text');
+  const counterEl = document.getElementById('intro-counter');
+  const barLeft   = document.getElementById('intro-bar-left');
+  const barRight  = document.getElementById('intro-bar-right');
+
+  const FRAMES   = 130;
+  const PAUSE_AT = Math.round(FRAMES * 0.6);
+  let frame = 0, phaseDone = false, paused = false;
 
   function loop() {
+    if (introComplete) return;
     requestAnimationFrame(loop);
-    frame = Math.min(AUTO_FRAMES, frame + 1);
-    targetProgress = frame / AUTO_FRAMES;
-    progress += (targetProgress - progress) * 0.10;
-    rot += 0.00012;
 
-    const p1 = progress;
+    orb.rotation.y += 0.0038;
+    rings.forEach(r => { r.rotation.z += r.userData.speed; });
+    hex.rotation.z -= 0.0028;
+    renderer.render(scene, camera);
 
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, W, H);
+    if (phaseDone || paused) return;
+    frame = Math.min(FRAMES, frame + 1);
+    const p   = frame / FRAMES;
+    const pct = Math.round(p * 100);
+    const hw  = (p * 50).toFixed(2) + '%';
 
-    /* ── パーティクル ── */
-    const pFade = Math.max(0, 1 - p1 * 2);
-    if (pFade > 0.01) {
-      const depth = 1 - p1 * 0.88;
-      for (const p of particles) {
-        const pz = p.z * depth;
-        if (pz < 0.02) continue;
-        const s  = 0.28 / pz;
-        const a  = Math.atan2(p.y, p.x) + rot * 0.22;
-        const rr = Math.hypot(p.x, p.y);
-        const sx = W*0.5 + Math.cos(a)*rr*s;
-        const sy = H*0.5 + Math.sin(a)*rr*s*0.55;
-        if (sx < -20||sx > W+20||sy < -20||sy > H+20) continue;
-        ctx.globalAlpha = p.alpha * Math.min(1, s*3) * pFade;
-        ctx.fillStyle   = p.pink ? '#f90091' : '#fff';
-        ctx.beginPath(); ctx.arc(sx, sy, Math.max(0.3, p.sz*s*2), 0, Math.PI*2); ctx.fill();
-      }
-      ctx.globalAlpha = 1;
+    if (barLeft)  barLeft.style.width  = hw;
+    if (barRight) barRight.style.width = hw;
+    if (counterEl) counterEl.textContent = pct + '%';
+
+    if (frame === PAUSE_AT) {
+      paused = true;
+      setTimeout(() => { paused = false; }, 1500);
     }
 
-    /* ══ フェーズ1：ロゴ全体表示 → 拡大 → 通過 ══ */
-    if (logoImg.complete && logoImg.naturalWidth && p1 > 0) {
-      /* 画面に収まるサイズ（全体が見える）から指数的拡大 */
-      const logoBaseW = Math.min(460, W * 0.54);
-      const lw = logoBaseW * Math.pow(28, p1);
-      const lh = lw * (logoImg.naturalHeight / logoImg.naturalWidth);
-
-      ctx.filter = 'invert(1)';
-      ctx.drawImage(logoImg, W*0.5 - lw*0.5, H*0.5 - lh*0.5, lw, lh);
-      ctx.filter = 'none';
+    if (frame >= FRAMES && !phaseDone) {
+      phaseDone = true;
+      renderer.setClearColor(0xf90091, 1);
+      allMats.forEach(m => m.color.setHex(0x000000));
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (welcomeEl) welcomeEl.style.display  = 'block';
+      if (counterEl) { counterEl.textContent = '100%'; counterEl.style.color = '#000'; }
+      if (barLeft)  barLeft.style.background  = '#000';
+      if (barRight) barRight.style.background = '#000';
+      setTimeout(completeIntro, 1000);
     }
-
-    /* ── ホワイトフラッシュ → ページ遷移 ── */
-    if (progress > 0.88) {
-      const flash = Math.min(1, (progress - 0.88) / 0.12);
-      ctx.fillStyle = `rgba(255,255,255,${flash.toFixed(3)})`;
-      ctx.fillRect(0, 0, W, H);
-    }
-    if (progress >= 0.99) completeIntro();
-
-    /* ── UI ── */
-    const pInt = Math.round(progress * 100);
-    if (counterEl) counterEl.textContent = String(pInt).padStart(2,'0') + '%';
-    if (progressEl) progressEl.style.width = pInt + '%';
   }
 
-  /* クリックでスキップ */
   overlay.addEventListener('click', completeIntro);
 
   function completeIntro() {
@@ -1087,15 +1073,18 @@ function submitForm(e) {
   }
 
   window.addEventListener('resize', () => {
-    W = cv.width  = window.innerWidth;
-    H = cv.height = window.innerHeight;
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
   });
 
   loop();
 })();
 
+
+
 /* ═══════════════════════════
-   THREE.JS HERO 3D — 魔法陣＋軌道環
+   HERO 3D — 浮遊パーティクル
 ═══════════════════════════ */
 (function(){
   if (typeof THREE === 'undefined') return;
@@ -1111,61 +1100,6 @@ function submitForm(e) {
   const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 100);
   camera.position.z = 5.5;
 
-  const WHITE = 0xffffff;
-  const ADD   = { blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false };
-  const NRM   = { blending: THREE.NormalBlending,   depthWrite: false, depthTest: false };
-
-  const wMat = op => new THREE.MeshBasicMaterial({ color: WHITE, wireframe: true, transparent: true, opacity: op, ...NRM });
-  const lMat = op => new THREE.LineBasicMaterial({ color: WHITE, transparent: true, opacity: op, ...NRM });
-
-  /* ── 軌道環グループ（キャラの胴体に合わせて少し上にオフセット） ── */
-  const orb = new THREE.Group();
-  orb.position.y = 0.5;
-
-  /* 3本のトーラス：それぞれ60°ずつ傾け、異なる速度で自転 */
-  const rings = [
-    { tiltX: 0,                   op: 0.055, speed:  0.0022 },
-    { tiltX: Math.PI / 3,         op: 0.045, speed: -0.0032 },
-    { tiltX: (2 * Math.PI) / 3,   op: 0.038, speed:  0.0017 },
-  ].map(({ tiltX, op, speed }) => {
-    const m = new THREE.Mesh(new THREE.TorusGeometry(1.65, 0.020, 8, 120), wMat(op));
-    m.rotation.x = tiltX;
-    m.userData.speed = speed;
-    orb.add(m);
-    return m;
-  });
-
-  /* ── 正十二面体 ── */
-  const hex = new THREE.Group();
-
-  const dodecEdges = new THREE.EdgesGeometry(new THREE.DodecahedronGeometry(1.05));
-  hex.add(new THREE.LineSegments(dodecEdges, lMat(0.42)));
-
-
-  orb.add(hex);
-
-  /* ── 6軸ポールのノード球 ── */
-  const nodeMat = new THREE.MeshBasicMaterial({ color: WHITE, transparent: true, opacity: 0.015, ...NRM });
-  const nodeGeo = new THREE.SphereGeometry(0.048, 8, 8);
-  [
-    [ 0,     1.65,  0   ], [ 0,    -1.65,  0   ],
-    [ 1.65,  0,     0   ], [-1.65,  0,     0   ],
-    [ 0,     0,     1.65], [ 0,     0,    -1.65],
-  ].forEach(([x, y, z]) => {
-    const n = new THREE.Mesh(nodeGeo, nodeMat);
-    n.position.set(x, y, z);
-    orb.add(n);
-  });
-
-  /* 中心コア */
-  orb.add(new THREE.Mesh(
-    new THREE.SphereGeometry(0.09, 12, 12),
-    new THREE.MeshBasicMaterial({ color: WHITE, transparent: true, opacity: 0.015, ...NRM })
-  ));
-
-  scene.add(orb);
-
-  /* ── パーティクル（軌道環の周囲に漂う） ── */
   const N = 100, pa = new Float32Array(N * 3);
   for (let i = 0; i < N; i++) {
     const r = 2.8 + Math.random() * 4.2;
@@ -1178,50 +1112,25 @@ function submitForm(e) {
   const ptGeo = new THREE.BufferGeometry();
   ptGeo.setAttribute('position', new THREE.BufferAttribute(pa, 3));
   const pts = new THREE.Points(ptGeo, new THREE.PointsMaterial({
-    color: WHITE, size: 0.18, transparent: true, opacity: 0.07,
+    color: 0xffffff, size: 0.18, transparent: true, opacity: 0.07,
     blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false,
     sizeAttenuation: true,
   }));
   scene.add(pts);
 
-  /* ── マウス・リサイズ ── */
-  let mx = 0, my = 0, sx = 0, sy = 0;
-  window.addEventListener('mousemove', e => {
-    mx = (e.clientX / innerWidth  - 0.5) * 2;
-    my = (e.clientY / innerHeight - 0.5) * 2;
-  });
   window.addEventListener('resize', () => {
     camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(innerWidth, innerHeight);
   });
 
-  /* ── アニメーションループ ── */
   (function loop() {
     requestAnimationFrame(loop);
-
-    sx += (mx - sx) * 0.035;
-    sy += (my - sy) * 0.035;
-
-    // 軌道環全体がゆっくり公転
-    orb.rotation.y += 0.0038;
-    // 各リングが独自の平面で自転
-    rings.forEach(r => { r.rotation.z += r.userData.speed; });
-    // 魔法陣は逆回転してカウンターで複雑な動きを演出
-    hex.rotation.z -= 0.0028;
-
     pts.rotation.y += 0.0005;
     pts.rotation.x += 0.0002;
-
-    // マウスでカメラが微妙にパン（視差効果）
-    camera.position.x += (sx * 0.32  - camera.position.x) * 0.022;
-    camera.position.y += (-sy * 0.24 - camera.position.y) * 0.022;
-    camera.lookAt(0, 0.5, 0);
-
     renderer.render(scene, camera);
   })();
 })();
-
 
 /* ═══════════════════════════
    SECTION 3D DECORATIONS
