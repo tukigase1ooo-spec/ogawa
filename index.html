@@ -583,6 +583,7 @@ for (let i = 0; i < TOTAL; i++) {
 }
 
 function gotoSlide(n) {
+  if (window.introActive) return;
   si = (n + TOTAL) % TOTAL;
   htrack.style.transform = `translateX(-${si * 100}%)`;
   document.querySelectorAll('.hdot').forEach((d,i) => d.classList.toggle('on', i===si));
@@ -884,6 +885,7 @@ function submitForm(e) {
   }
 
   async function goTo(idx) {
+    if (window.introActive) return;
     if (busy || idx === cur || idx < 0 || idx >= SECTIONS.length) return;
     busy = true;
     cur  = idx;
